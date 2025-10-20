@@ -75,7 +75,7 @@ class CalculatorInfoBloc
                 lastResult,
               );
               didCalculate = !didCalculate;
-              print(didCalculate);
+              //print(didCalculate);
             } catch (e) {
               userInput = "Wrong Input";
             }
@@ -128,14 +128,41 @@ class CalculatorInfoBloc
     Expression exp = p.parse(finalUserInput);
     ContextModel cm = ContextModel();
     double eval = exp.evaluate(EvaluationType.REAL, cm);
-    var answer = eval.toString();
+    print(eval);
+    //var answer = eval.toString();
     didCalculate = !didCalculate;
     lastResult = button;
-    print(answer);
+    String answer;
+    if (eval % 1.0 == 0.0) {
+      answer = eval.toString();
+    } else {
+      if (countDecimalPlaces(eval) < 6) {
+        answer = eval.toString();
+      } else {
+        answer = eval.toStringAsFixed(6);
+      }
+    } //
     return answer;
   }
 
   String calculatePercentage(String input) {
+    final incorrectRegrex = RegExp(r'^(\-\d+%)');
+    final match2 = incorrectRegrex.firstMatch(input);
+
+    if (match2 != null) {
+      return "";
+    }
+
+    final percentOnlyRegex = RegExp(r'^(\d+(\.\d+)?)%$');
+    final match1 = percentOnlyRegex.firstMatch(input);
+
+    if (match1 != null) {
+      // Extract the number part and convert it to decimal
+      final number = double.parse(match1.group(1)!);
+      final percentValue = number / 100;
+      return percentValue.toString();
+    }
+
     final regex = RegExp(r'(\d+)\s*([-+*/])\s*(\d+)%');
     final match = regex.firstMatch(input);
     late String value;
@@ -152,5 +179,16 @@ class CalculatorInfoBloc
       operator = "";
     }
     return value;
+  }
+
+  int countDecimalPlaces(double number) {
+    String str = number.toString();
+
+    // If there's a decimal point, count digits after it
+    if (str.contains('.')) {
+      return str.split('.')[1].length;
+    }
+
+    return 0; // No decimal point → it's an integer
   }
 }
